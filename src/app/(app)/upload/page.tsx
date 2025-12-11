@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Card, Space, Typography, Upload, theme } from "antd";
+import { Alert, Button, Card, Input, Space, Typography, Upload, theme } from "antd";
 import type { UploadProps } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,9 @@ export default function UploadPage() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [statusKey, setStatusKey] = useState<"idle" | "ready">("idle");
+  const [urlValue, setUrlValue] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [isFetchingUrl, setIsFetchingUrl] = useState(false);
 
   const statusText = useMemo(
     () => (statusKey === "ready" ? t("statusReadyForGame") : t("statusIdle")),
@@ -41,6 +44,39 @@ export default function UploadPage() {
     },
     [handleFile]
   );
+
+  const handleUrlUpload = useCallback(async () => {
+    setUrlError(null);
+    const trimmed = urlValue.trim();
+    if (!trimmed) {
+      setUrlError(t("uploadUrlInvalid"));
+      return;
+    }
+    try {
+      new URL(trimmed);
+    } catch {
+      setUrlError(t("uploadUrlInvalid"));
+      return;
+    }
+
+    setIsFetchingUrl(true);
+    try {
+      const res = await fetch(trimmed);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const urlParts = trimmed.split("/");
+      const last = urlParts[urlParts.length - 1] || "remote.rom";
+      const file = new File([blob], last, { type: blob.type || "application/octet-stream" });
+      handleFile(file);
+    } catch (err) {
+      console.error(err);
+      setUrlError(t("uploadUrlError"));
+    } finally {
+      setIsFetchingUrl(false);
+    }
+  }, [handleFile, t, urlValue]);
 
   const uploadProps = useMemo<UploadProps>(
     () => ({
@@ -106,6 +142,38 @@ export default function UploadPage() {
             <Typography.Text style={{ color: token.colorTextSecondary }}>{t("supportFormats")}</Typography.Text>
           </Space>
         </Upload.Dragger>
+      </Card>
+      <Card
+        variant="outlined"
+        style={{
+          background: token.colorBgContainer,
+          borderColor: token.colorBorder,
+        }}
+      >
+        <Space orientation="vertical" size="middle" style={{ width: "100%" }}>
+          <Typography.Text style={{ color: token.colorTextBase, fontWeight: 600 }}>
+            {t("uploadUrlLabel")}
+          </Typography.Text>
+          <Space.Compact style={{ width: "100%" }}>
+            <Input
+              value={urlValue}
+              onChange={(e) => setUrlValue(e.target.value)}
+              placeholder={t("uploadUrlPlaceholder")}
+              allowClear
+            />
+            <Button type="primary" loading={isFetchingUrl} onClick={handleUrlUpload}>
+              {t("uploadUrlButton")}
+            </Button>
+          </Space.Compact>
+          {urlError && (
+            <Typography.Text type="danger" style={{ marginTop: 4 }}>
+              {urlError}
+            </Typography.Text>
+          )}
+          <Typography.Text style={{ color: token.colorTextSecondary }}>
+            {t("supportFormats")}
+          </Typography.Text>
+        </Space>
       </Card>
       <Alert
         type="info"
