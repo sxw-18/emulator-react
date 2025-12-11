@@ -48,7 +48,7 @@ export default function GamePage() {
         type="info"
         title={
           <Space size="middle">
-            <span>{t("statusReadyForGame")}</span>
+            <span>{t("gameReadyStable")}</span>
             <Link href="/upload">
               <Button size="small">{t("gameReplaceRom")}</Button>
             </Link>

@@ -88,6 +88,7 @@ export default function HomePage() {
             {[
               { title: "即开即玩", desc: "上传 ROM 后直接在浏览器运行。" },
               { title: "多平台核心", desc: "覆盖常见 8/16/32 位主机与掌机。" },
+              { title: "手柄 / 键盘", desc: "支持手柄，也可用键盘操作（← → ↑ ↓ / Z X A S 等）。" },
               { title: "无插件", desc: "纯前端体验，无需额外安装。" },
             ].map((item) => (
               <div
