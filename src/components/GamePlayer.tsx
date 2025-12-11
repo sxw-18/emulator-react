@@ -275,7 +275,9 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
           width: "100%",
           background: token.colorBgContainer,
           borderColor: token.colorBorder,
+          overflow: "hidden",
         }}
+        styles={{ body: { padding: 0 } }}
       >
         <div
           key={gameKey}

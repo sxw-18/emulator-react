@@ -26,7 +26,7 @@ export default function HomePage() {
           </div>
         </div>
       </header>
-      <div style={{ maxWidth: 960, width: "100%", display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 32, margin: "0 auto", padding: "128px 24px" }}>
+      <div className="hero-grid">
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
           <p
             style={{

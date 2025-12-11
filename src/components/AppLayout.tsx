@@ -146,7 +146,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               background: isDark ? "#0b1220" : "#ffffff",
             }}
           />
-          <Layout.Content style={{ padding: "32px 24px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+          <Layout.Content className="app-content">
             {breadcrumbs.length > 0 && (
               <div
                 style={{
