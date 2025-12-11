@@ -175,6 +175,133 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
     setStatus(t("statusIdle"));
   }, [t]);
 
+  // 处理页面可见性变化，解决浏览器切换到后台后卡住的问题
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    let resumeTimeout: NodeJS.Timeout | null = null;
+
+    const handleVisibilityChange = () => {
+      const ejsWindow = window as EJSWindow;
+      
+      if (document.visibilityState === "visible") {
+        // 页面重新可见时，恢复模拟器
+        if (ejsWindow.EJS_emulator && gameStarted) {
+          // 延迟一下，确保页面完全可见
+          if (resumeTimeout) {
+            clearTimeout(resumeTimeout);
+          }
+          
+          resumeTimeout = setTimeout(() => {
+            try {
+              // 尝试恢复模拟器
+              const emulator = ejsWindow.EJS_emulator as {
+                callEvent?: (event: string) => void;
+                resume?: () => void;
+                pause?: () => void;
+                restart?: () => void;
+              };
+              
+              // 先尝试调用 resume 方法
+              if (typeof emulator.resume === "function") {
+                emulator.resume();
+              }
+              // 如果没有 resume，尝试通过 callEvent 恢复
+              else if (typeof emulator.callEvent === "function") {
+                try {
+                  emulator.callEvent("resume");
+                } catch {
+                  // 如果 resume 事件不存在，尝试其他方法
+                  console.warn("Resume event not available, trying alternative methods");
+                }
+              }
+              
+              // 恢复音频上下文（如果存在）
+              if (typeof AudioContext !== "undefined") {
+                // 查找页面中可能存在的音频上下文并恢复
+                const audioElements = document.querySelectorAll("audio");
+                audioElements.forEach((audio) => {
+                  if (audio.paused) {
+                    audio.play().catch((e) => {
+                      console.warn("Failed to resume audio:", e);
+                    });
+                  }
+                });
+                
+                // 尝试恢复 Web Audio API 上下文
+                // EmulatorJS 可能使用 Web Audio API
+                const canvas = document.querySelector("#game canvas") as HTMLCanvasElement | null;
+                if (canvas) {
+                  // 触发一个重绘，帮助恢复渲染循环
+                  canvas.style.display = "none";
+                  void canvas.offsetHeight; // 触发重排
+                  canvas.style.display = "";
+                }
+              }
+              
+              console.log("Game resumed from background");
+            } catch (error) {
+              console.warn("Error resuming emulator:", error);
+            }
+          }, 100);
+        }
+      } else if (document.visibilityState === "hidden") {
+        // 页面隐藏时，清理定时器
+        if (resumeTimeout) {
+          clearTimeout(resumeTimeout);
+          resumeTimeout = null;
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    // 也监听 focus 事件作为备用方案
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        handleVisibilityChange();
+      }
+    };
+    
+    window.addEventListener("focus", handleFocus);
+    
+    // 监听用户交互，用于恢复音频上下文
+    const handleUserInteraction = () => {
+      if (document.visibilityState === "visible" && gameStarted) {
+        const ejsWindow = window as EJSWindow;
+        if (ejsWindow.EJS_emulator) {
+          // 用户交互后，尝试恢复音频
+          const audioElements = document.querySelectorAll("audio");
+          audioElements.forEach((audio) => {
+            if (audio.paused) {
+              audio.play().catch(() => {
+                // 忽略错误，可能已经恢复了
+              });
+            }
+          });
+        }
+      }
+    };
+    
+    // 监听点击和触摸事件来恢复音频
+    document.addEventListener("click", handleUserInteraction, { once: true });
+    document.addEventListener("touchstart", handleUserInteraction, { once: true });
+    document.addEventListener("keydown", handleUserInteraction, { once: true });
+
+    return () => {
+      if (resumeTimeout) {
+        clearTimeout(resumeTimeout);
+      }
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("touchstart", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
+    };
+  }, [gameStarted]);
+
   useEffect(() => {
     let active = true;
     const boot = async () => {
