@@ -23,9 +23,15 @@ interface EJSWindow extends Window {
   EmulatorJS?: unknown;
 }
 
+// 生产环境使用官方 CDN，开发环境使用本地资源
+// 如果 jsDelivr 不可用，可以尝试：
+// - https://unpkg.com/emulatorjs@latest/data/
+// - EmulatorJS 官方 CDN（如果有）
 const DATA_PATH =
   (typeof window !== "undefined" && (window as EJSWindow).__EJS_DATA_PATH) ||
-  (process.env.NODE_ENV === "development" ? "/data/" : "/data/");
+  (process.env.NODE_ENV === "development" 
+    ? "/data/" 
+    : "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/");
 
 type CoreKey =
   | "nes"
