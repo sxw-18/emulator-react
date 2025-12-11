@@ -31,7 +31,7 @@ const DATA_PATH =
   (typeof window !== "undefined" && (window as EJSWindow).__EJS_DATA_PATH) ||
   (process.env.NODE_ENV === "development" 
     ? "/data/" 
-    : "https://cdn.emulatorjs.org/nightly/data/");
+    : "https://static.8bgame.top/data/");
 
 type CoreKey =
   | "nes"
