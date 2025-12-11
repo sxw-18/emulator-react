@@ -9,9 +9,9 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV === "development";
 
     // In development, serve directly from `public/data` (no rewrite needed).
-    if (isDev) {
-      return [];
-    }
+    // if (isDev) {
+    //   return [];
+    // }
 
     // In production, pull from the CDN domain.
     return [
