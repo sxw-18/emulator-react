@@ -22,6 +22,7 @@ interface EJSWindow extends Window {
   EJS_threads?: boolean;
   EJS_emulator?: unknown;
   EJS_onGameStart?: () => void;
+  EmulatorJS?: unknown;
 }
 
 const DATA_PATH =
@@ -76,6 +77,11 @@ function resolveCore(ext: string): CoreKey {
 async function injectLoader(src: string): Promise<void> {
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Cannot inject loader on server");
+  }
+
+  // 如果全局已存在，则无需重复加载，避免“Identifier has already been declared”
+  if ((window as EJSWindow).EmulatorJS) {
+    return;
   }
   
   // 移除已存在的 loader（安全地）
@@ -169,12 +175,52 @@ export default function Home() {
   // 确保只在客户端执行
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+    // 仅在客户端读取缓存并应用
+    const storedLang = window.localStorage.getItem("ejs_language");
+    if (storedLang === "zh" || storedLang === "en") {
+      setTimeout(() => setLanguage(storedLang), 0);
+    }
+    const storedTheme = window.localStorage.getItem("ejs_theme");
+    if (storedTheme === "dark") setTimeout(() => setIsDark(true), 0);
+    if (storedTheme === "light") setTimeout(() => setIsDark(false), 0);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 初始化语言到 i18n，并同步缓存
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language).then(() => {
+        setStatus(i18n.getFixedT(language)("statusIdle"));
+      });
+    }
+    window.localStorage.setItem("ejs_language", language);
+
+    // 初始化主题到缓存
+    window.localStorage.setItem("ejs_theme", isDark ? "dark" : "light");
+
     // 组件卸载时清理
     return () => {
       cleanupGame();
     };
-  }, [cleanupGame]);
+  }, [cleanupGame, i18n, isDark, language]);
+
+  // 语言变化时同步 i18n 与缓存
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language).then(() => {
+        setStatus(i18n.getFixedT(language)("statusIdle"));
+      });
+    }
+    window.localStorage.setItem("ejs_language", language);
+  }, [i18n, language]);
+
+  // 主题变化时写入缓存
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("ejs_theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file || typeof window === "undefined") return;
@@ -328,10 +374,7 @@ export default function Home() {
           onToggleTheme={() => setIsDark((prev) => !prev)}
           language={language}
           onLanguageChange={(lang) => {
-            i18n.changeLanguage(lang).then(() => {
-              setLanguage(lang);
-              setStatus(i18n.getFixedT(lang)("statusIdle"));
-            });
+            setLanguage(lang);
           }}
           colors={{
             textBase: themeConfig.token.colorTextBase,
