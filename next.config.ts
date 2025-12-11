@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/data/:path*",
-        destination: "https://upload.jishicv.com/data/:path*",
+        destination: "https://static.8bgame.top/data/:path*",
       },
     ];
   },
