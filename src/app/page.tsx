@@ -2,27 +2,32 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(180deg, #0b1220 0%, #0f172a 60%, #0b1220 100%)",
-        color: "#e2e8f0",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "48px 24px",
-      }}
-    >
-      <div
+    <main style={{ minHeight: "100vh", background: "linear-gradient(180deg, #0b1220 0%, #0f172a 60%, #0b1220 100%)", color: "#e2e8f0" }}>
+      <header
         style={{
-          maxWidth: 960,
-          width: "100%",
-          display: "grid",
-          gridTemplateColumns: "1.1fr 0.9fr",
-          gap: 32,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          padding: "16px 24px",
+          borderBottom: "1px solid rgba(51, 65, 85, 0.6)",
+          background: "rgba(11, 18, 32, 0.8)",
+          backdropFilter: "blur(10px)",
         }}
       >
-        <div>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h4 style={{ margin: 0, color: "#f8fafc", letterSpacing: 0.2 }}>EmulatorJS</h4>
+          <div style={{ display: "flex", gap: 10 }}>
+            <Link href="/upload" style={{ padding: "8px 14px", borderRadius: 10, background: "#1677ff", color: "#fff", fontWeight: 600, textDecoration: "none" }}>
+              开始上传
+            </Link>
+            <Link href="/game" style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #334155", color: "#e2e8f0", fontWeight: 600, textDecoration: "none" }}>
+              直接进入
+            </Link>
+          </div>
+        </div>
+      </header>
+      <div style={{ maxWidth: 960, width: "100%", display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: 32, margin: "0 auto", padding: "128px 24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
           <p
             style={{
               display: "inline-flex",
@@ -39,10 +44,10 @@ export default function HomePage() {
             SSR Landing · EmulatorJS
           </p>
           <h1 style={{ fontSize: 44, lineHeight: 1.1, margin: "0 0 16px" }}>
-            分成两个步骤：先上传，再进入游戏
+            在线启动你的经典游戏
           </h1>
           <p style={{ fontSize: 18, color: "#cbd5e1", marginBottom: 24 }}>
-            首页使用 SSR 提供最快的首屏体验。点击开始上传进入 SPA 流程，完成文件选择后自动跳转到游戏页。
+            选择 ROM 即可在浏览器内运行，无需安装。支持多种经典主机核心。
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
             <Link
@@ -81,9 +86,9 @@ export default function HomePage() {
             }}
           >
             {[
-              { title: "SSR 首屏", desc: "首页纯服务器渲染，无客户端负担。" },
-              { title: "SPA 上传", desc: "上传页与游戏页保持前端状态与速度。" },
-              { title: "无刷新跳转", desc: "上传完成自动跳转到游戏页面。" },
+              { title: "即开即玩", desc: "上传 ROM 后直接在浏览器运行。" },
+              { title: "多平台核心", desc: "覆盖常见 8/16/32 位主机与掌机。" },
+              { title: "无插件", desc: "纯前端体验，无需额外安装。" },
             ].map((item) => (
               <div
                 key={item.title}
@@ -122,9 +127,9 @@ export default function HomePage() {
           >
             <h3 style={{ margin: "0 0 10px", color: "#e2e8f0" }}>流程</h3>
             <ol style={{ paddingLeft: 20, margin: 0, display: "grid", gap: 8 }}>
-              <li>访问上传页（SPA），选择 ROM 文件。</li>
-              <li>上传完成自动跳转到游戏页（SPA）。</li>
-              <li>游戏页加载 EmulatorJS 并启动模拟器。</li>
+              <li>点击开始上传，选择本地 ROM 文件。</li>
+              <li>完成选择后进入游戏页并自动加载核心。</li>
+              <li>开始游戏，随时可返回重新选择 ROM。</li>
             </ol>
           </div>
           <div
@@ -139,7 +144,7 @@ export default function HomePage() {
               lineHeight: 1.5,
             }}
           >
-            提示：游戏页需要上传页的文件上下文，请先上传再进入游戏。
+            提示：首次使用先上传 ROM，若需更换可在游戏页点击返回。
           </div>
         </div>
       </div>

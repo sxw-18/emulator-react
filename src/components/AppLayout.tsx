@@ -31,21 +31,23 @@ export function useAppState() {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
   const initialLang: Lang = i18n.language.startsWith("en") ? "en" : "zh";
-  const [language, setLanguage] = useState<Lang>(initialLang);
-  const [isDark, setIsDark] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Read persisted preferences after mount to avoid SSR/CSR mismatch
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const storedLang = window.localStorage.getItem("ejs_language");
-    if ((storedLang === "zh" || storedLang === "en") && storedLang !== language) {
-      setLanguage(storedLang);
+  const [language, setLanguage] = useState<Lang>(() => {
+    if (typeof window !== "undefined") {
+      const storedLang = window.localStorage.getItem("ejs_language");
+      if (storedLang === "zh" || storedLang === "en") return storedLang;
     }
-    const storedTheme = window.localStorage.getItem("ejs_theme");
-    if (storedTheme === "dark") setIsDark(true);
-    if (storedTheme === "light") setIsDark(false);
-  }, [language]);
+    return initialLang;
+  });
+  // Default to dark theme; will be overridden by stored preference after mount
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedTheme = window.localStorage.getItem("ejs_theme");
+      if (storedTheme === "dark") return true;
+      if (storedTheme === "light") return false;
+    }
+    return true;
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     i18n.changeLanguage(language);
