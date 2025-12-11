@@ -1,9 +1,12 @@
 // Client-only wrapper for SPA pages (upload/game)
 "use client";
 
-import { ConfigProvider, Layout, theme } from "antd";
+import { Breadcrumb, Button, ConfigProvider, Layout, theme } from "antd";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { AppHeader } from "./AppHeader";
 import "../i18n";
 
@@ -29,25 +32,36 @@ export function useAppState() {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const pathname = usePathname();
+  const router = useRouter();
   const initialLang: Lang = i18n.language.startsWith("en") ? "en" : "zh";
-  const [language, setLanguage] = useState<Lang>(() => {
-    if (typeof window !== "undefined") {
-      const storedLang = window.localStorage.getItem("ejs_language");
-      if (storedLang === "zh" || storedLang === "en") return storedLang;
-    }
-    return initialLang;
-  });
+  const [language, setLanguage] = useState<Lang>(initialLang);
   // Default to dark theme; will be overridden by stored preference after mount
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      const storedTheme = window.localStorage.getItem("ejs_theme");
-      if (storedTheme === "dark") return true;
-      if (storedTheme === "light") return false;
-    }
-    return true;
-  });
+  const [isDark, setIsDark] = useState<boolean>(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Hydrate theme/language from storage after mount to avoid SSR mismatch
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedLang = window.localStorage.getItem("ejs_language");
+    const storedTheme = window.localStorage.getItem("ejs_theme");
+
+    queueMicrotask(() => {
+      setLanguage((prev) => {
+        if (storedLang === "zh" || storedLang === "en") {
+          return storedLang === prev ? prev : storedLang;
+        }
+        return prev;
+      });
+
+      setIsDark((prev) => {
+        if (storedTheme === "dark") return true;
+        if (storedTheme === "light") return false;
+        return prev;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     i18n.changeLanguage(language);
@@ -95,6 +109,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     [isDark]
   );
 
+  const breadcrumbs = useMemo(() => {
+    const map: Record<string, string> = {
+      "/upload": t("breadcrumbUpload"),
+      "/game": t("breadcrumbGame"),
+    };
+    const current = map[pathname];
+    if (!current) return [];
+    return [
+      { title: <Link href="/">{t("breadcrumbHome")}</Link> },
+      { title: current },
+    ];
+  }, [pathname, t]);
+
   return (
     <AppStateContext.Provider
       value={{
@@ -120,6 +147,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             }}
           />
           <Layout.Content style={{ padding: "32px 24px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+            {breadcrumbs.length > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 16,
+                }}
+              >
+                <Button
+                  type="text"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => router.push("/")}
+                  style={{ color: themeConfig.token.colorTextBase, padding: "4px 8px" }}
+                >
+                  {t("breadcrumbBack")}
+                </Button>
+                <Breadcrumb items={breadcrumbs} />
+              </div>
+            )}
             {children}
           </Layout.Content>
         </Layout>

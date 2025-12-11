@@ -32,6 +32,10 @@ const resources = {
       backToUpload: "返回上传页",
       gameReplaceRom: "重新选择 ROM",
       gameHintChange: "想换一份 ROM？点击上方按钮返回上传页。",
+      breadcrumbHome: "首页",
+      breadcrumbUpload: "上传",
+      breadcrumbGame: "游戏",
+      breadcrumbBack: "返回首页",
     },
   },
   en: {
@@ -62,6 +66,10 @@ const resources = {
       backToUpload: "Back to upload",
       gameReplaceRom: "Choose another ROM",
       gameHintChange: "Need a different ROM? Jump back to upload above.",
+      breadcrumbHome: "Home",
+      breadcrumbUpload: "Upload",
+      breadcrumbGame: "Game",
+      breadcrumbBack: "Back to home",
     },
   },
 };
