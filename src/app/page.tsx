@@ -272,14 +272,16 @@ export default function Home() {
   const uploadProps = useMemo<UploadProps>(() => ({
     multiple: false,
     showUploadList: false,
+    // 让点击区域不自动弹出文件选择框，避免与自定义按钮的点击冲突
+    openFileDialogOnClick: false,
     accept: ".zip,.7z,.nes,.sfc,.smc,.gba,.gb,.gbc,.nds,.n64,.z64,.pce,.md,.gen,.smd,.iso,.bin,.img,.fds,.unif,.unf,.fig,.gd3,.gd7,.dx2,.bsx,.swc,.ngp,.ngc,.ws,.wsc,.col,.cv,.d64",
     beforeUpload: (file: File) => {
       handleFile(file);
       return false; // 阻止自动上传
     },
     onDrop: (e: React.DragEvent<HTMLElement>) => {
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+      const file = e.dataTransfer.files?.[0];
+      if (file) handleFile(file);
     },
     onDragOver: () => setIsDragging(true),
     onDragLeave: () => setIsDragging(false),
@@ -356,7 +358,14 @@ export default function Home() {
                     {t("uploadSubtitle")}
                   </Typography.Text>
                   <Space>
-                    <Button type="primary" onClick={() => fileRef.current?.click()}>
+                    <Button
+                      type="primary"
+                      onClick={(e) => {
+                        // 阻止事件冒泡到 Dragger，避免触发其内置的文件选择
+                        e.stopPropagation();
+                        fileRef.current?.click();
+                      }}
+                    >
                       {t("uploadButton")}
                     </Button>
               <input
