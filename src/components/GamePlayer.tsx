@@ -31,7 +31,7 @@ const DATA_PATH =
   (typeof window !== "undefined" && (window as EJSWindow).__EJS_DATA_PATH) ||
   (process.env.NODE_ENV === "development" 
     ? "/data/" 
-    : "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/");
+    : "https://cdn.emulatorjs.org/nightly/data/");
 
 type CoreKey =
   | "nes"
