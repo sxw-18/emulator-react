@@ -222,8 +222,9 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
               if (typeof AudioContext !== "undefined") {
                 // 查找页面中可能存在的音频上下文并恢复
                 const audioElements = document.querySelectorAll("audio");
-                audioElements.forEach((audio) => {
-                  if (audio.paused) {
+                // Convert NodeList to Array and filter out null/undefined
+                Array.from(audioElements).forEach((audio) => {
+                  if (audio && audio.paused) {
                     audio.play().catch((e) => {
                       console.warn("Failed to resume audio:", e);
                     });
@@ -274,8 +275,9 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
         if (ejsWindow.EJS_emulator) {
           // 用户交互后，尝试恢复音频
           const audioElements = document.querySelectorAll("audio");
-          audioElements.forEach((audio) => {
-            if (audio.paused) {
+          // Convert NodeList to Array and filter out null/undefined
+          Array.from(audioElements).forEach((audio) => {
+            if (audio && audio.paused) {
               audio.play().catch(() => {
                 // 忽略错误，可能已经恢复了
               });

@@ -16,7 +16,7 @@ function HomeContent() {
     { title: t("homeFeatureMultiCore"), desc: t("homeFeatureMultiCoreDesc") },
     { title: t("homeFeatureController"), desc: t("homeFeatureControllerDesc") },
     { title: t("homeFeatureNoPlugin"), desc: t("homeFeatureNoPluginDesc") },
-  ];
+  ].filter((item) => item && item.title && item.desc); // Filter out any undefined items
 
   // 根据主题动态设置颜色
   const badgeBg = isDark ? "rgba(22, 119, 255, 0.18)" : "rgba(22, 119, 255, 0.1)";

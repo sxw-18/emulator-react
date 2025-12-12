@@ -28,7 +28,7 @@ export function AppHeader({
   const langItems: MenuProps["items"] = [
     { key: "zh", label: t("langZh") },
     { key: "en", label: "English" },
-  ];
+  ].filter((item) => item != null && item.key && item.label); // Filter out any undefined items
 
   return (
     <Layout.Header

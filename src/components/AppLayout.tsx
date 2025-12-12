@@ -110,16 +110,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
   const breadcrumbs = useMemo(() => {
-    const map: Record<string, string> = {
-      "/upload": t("breadcrumbUpload"),
-      "/game": t("breadcrumbGame"),
-    };
-    const current = map[pathname];
-    if (!current) return [];
-    return [
-      { title: <Link href="/">{t("breadcrumbHome")}</Link> },
-      { title: current },
-    ];
+    try {
+      const map: Record<string, string> = {
+        "/upload": t("breadcrumbUpload"),
+        "/game": t("breadcrumbGame"),
+      };
+      const current = map[pathname];
+      if (!current) return [];
+      
+      const homeTitle = t("breadcrumbHome");
+      if (!homeTitle) return [];
+      
+      const items = [
+        { key: "home", title: <Link href="/">{homeTitle}</Link> },
+        { key: pathname, title: current },
+      ];
+      // Filter out any undefined/null items and ensure all required properties exist
+      return items.filter((item) => item != null && item.title != null && item.key != null);
+    } catch (error) {
+      console.warn("Error creating breadcrumbs:", error);
+      return [];
+    }
   }, [pathname, t]);
 
   return (
@@ -164,7 +175,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 >
                   {t("breadcrumbBack")}
                 </Button>
-                <Breadcrumb items={breadcrumbs} />
+                {breadcrumbs.length > 0 && breadcrumbs.every((item) => item && item.title) && (
+                  <Breadcrumb items={breadcrumbs} />
+                )}
               </div>
             )}
             {children}
