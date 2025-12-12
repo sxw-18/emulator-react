@@ -1,154 +1,171 @@
-import Link from "next/link";
+"use client";
 
-export default function HomePage() {
+import Link from "next/link";
+import { AppLayout, useAppState } from "@/components/AppLayout";
+import { useTranslation } from "react-i18next";
+import { theme } from "antd";
+import "../i18n";
+
+function HomeContent() {
+  const { t } = useTranslation();
+  const { isDark } = useAppState();
+  const { token } = theme.useToken();
+
+  const features = [
+    { title: t("homeFeaturePlayNow"), desc: t("homeFeaturePlayNowDesc") },
+    { title: t("homeFeatureMultiCore"), desc: t("homeFeatureMultiCoreDesc") },
+    { title: t("homeFeatureController"), desc: t("homeFeatureControllerDesc") },
+    { title: t("homeFeatureNoPlugin"), desc: t("homeFeatureNoPluginDesc") },
+  ];
+
+  // 根据主题动态设置颜色
+  const badgeBg = isDark ? "rgba(22, 119, 255, 0.18)" : "rgba(22, 119, 255, 0.1)";
+  const badgeColor = isDark ? "#bae6ff" : "#1677ff";
+  const heroTextColor = token.colorTextSecondary;
+  const heroTitleColor = token.colorTextBase;
+  const secondaryButtonBorder = token.colorBorder;
+  const secondaryButtonColor = token.colorTextBase;
+  const featureCardBg = isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.02)";
+  const featureCardBorder = isDark ? "rgba(148, 163, 184, 0.2)" : "rgba(0, 0, 0, 0.1)";
+  const featureTitleColor = token.colorTextBase;
+  const featureDescColor = token.colorTextSecondary;
+  const rightCardBg = isDark ? "rgba(15, 23, 42, 0.9)" : "#ffffff";
+  const rightCardBorder = token.colorBorder;
+  const rightCardShadow = isDark ? "0 20px 60px rgba(0, 0, 0, 0.45)" : "0 4px 12px rgba(0, 0, 0, 0.08)";
+  const innerCardBg = isDark ? "#0b1220" : "#f8fafc";
+  const innerCardBorder = isDark ? "rgba(148, 163, 184, 0.35)" : token.colorBorder;
+  const innerCardText = token.colorTextSecondary;
+  const innerCardTitle = token.colorTextBase;
+  const tipCardBg = isDark ? "#0f172a" : "#f1f5f9";
+  const tipCardBorder = token.colorBorder;
+  const tipCardText = token.colorTextSecondary;
+
   return (
-    <main style={{ minHeight: "100vh", background: "linear-gradient(180deg, #0b1220 0%, #0f172a 60%, #0b1220 100%)", color: "#e2e8f0" }}>
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          padding: "16px 24px",
-          borderBottom: "1px solid rgba(51, 65, 85, 0.6)",
-          background: "rgba(11, 18, 32, 0.8)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h4 style={{ margin: 0, color: "#f8fafc", letterSpacing: 0.2 }}>EmulatorJS</h4>
-          <div style={{ display: "flex", gap: 10 }}>
-            <Link href="/upload" style={{ padding: "8px 14px", borderRadius: 10, background: "#1677ff", color: "#fff", fontWeight: 600, textDecoration: "none" }}>
-              开始上传
-            </Link>
-            <Link href="/game" style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #334155", color: "#e2e8f0", fontWeight: 600, textDecoration: "none" }}>
-              直接进入
-            </Link>
-          </div>
-        </div>
-      </header>
-      <div className="hero-grid">
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
-          <p
+    <div className="hero-grid" style={{ padding: "24px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
+        <p
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "6px 12px",
+            borderRadius: 999,
+            background: badgeBg,
+            color: badgeColor,
+            fontSize: 14,
+            fontWeight: 600,
+            marginBottom: 16,
+          }}
+        >
+          SSR Landing · EmulatorJS
+        </p>
+        <h1 style={{ fontSize: 44, lineHeight: 1.1, margin: "0 0 16px", color: heroTitleColor }}>
+          {t("homeHeroTitle")}
+        </h1>
+        <p style={{ fontSize: 18, color: heroTextColor, marginBottom: 24 }}>
+          {t("homeHeroDesc")}
+        </p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
+          <Link
+            href="/upload"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "6px 12px",
-              borderRadius: 999,
-              background: "rgba(22, 119, 255, 0.18)",
-              color: "#bae6ff",
-              fontSize: 14,
+              padding: "12px 20px",
+              borderRadius: 10,
+              background: token.colorPrimary,
+              color: "#ffffff",
               fontWeight: 600,
-              marginBottom: 16,
+              textDecoration: "none",
+              boxShadow: isDark ? "0 10px 30px rgba(22, 119, 255, 0.35)" : "0 4px 12px rgba(22, 119, 255, 0.25)",
             }}
           >
-            SSR Landing · EmulatorJS
-          </p>
-          <h1 style={{ fontSize: 44, lineHeight: 1.1, margin: "0 0 16px" }}>
-            在线启动你的经典游戏
-          </h1>
-          <p style={{ fontSize: 18, color: "#cbd5e1", marginBottom: 24 }}>
-            选择 ROM 即可在浏览器内运行，无需安装。支持多种经典主机核心。
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-            <Link
-              href="/upload"
-              style={{
-                padding: "12px 20px",
-                borderRadius: 10,
-                background: "#1677ff",
-                color: "#ffffff",
-                fontWeight: 600,
-                textDecoration: "none",
-                boxShadow: "0 10px 30px rgba(22, 119, 255, 0.35)",
-              }}
-            >
-              开始上传
-            </Link>
-            <Link
-              href="/game"
-              style={{
-                padding: "12px 20px",
-                borderRadius: 10,
-                border: "1px solid #334155",
-                color: "#e2e8f0",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
-            >
-              已上传？前往游戏
-            </Link>
-          </div>
-          <div
+            {t("homeButtonUpload")}
+          </Link>
+          <Link
+            href="/game"
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 12,
+              padding: "12px 20px",
+              borderRadius: 10,
+              border: `1px solid ${secondaryButtonBorder}`,
+              color: secondaryButtonColor,
+              fontWeight: 600,
+              textDecoration: "none",
             }}
           >
-            {[
-              { title: "即开即玩", desc: "上传 ROM 后直接在浏览器运行。" },
-              { title: "多平台核心", desc: "覆盖常见 8/16/32 位主机与掌机。" },
-              { title: "手柄 / 键盘", desc: "支持手柄，也可用键盘操作（← → ↑ ↓ / Z X A S 等）。" },
-              { title: "无插件", desc: "纯前端体验，无需额外安装。" },
-            ].map((item) => (
-              <div
-                key={item.title}
-                style={{
-                  padding: 14,
-                  borderRadius: 12,
-                  background: "rgba(255, 255, 255, 0.04)",
-                  border: "1px solid rgba(148, 163, 184, 0.2)",
-                }}
-              >
-                <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#e2e8f0" }}>{item.title}</p>
-                <p style={{ margin: 0, color: "#cbd5e1", fontSize: 14 }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
+            {t("homeButtonGame")}
+          </Link>
         </div>
         <div
           style={{
-            background: "rgba(15, 23, 42, 0.9)",
-            border: "1px solid rgba(148, 163, 184, 0.25)",
-            borderRadius: 16,
-            padding: 20,
-            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.45)",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: 12,
           }}
         >
-          <div
-            style={{
-              background: "#0b1220",
-              borderRadius: 12,
-              padding: 16,
-              border: "1px dashed rgba(148, 163, 184, 0.35)",
-              color: "#cbd5e1",
-              fontSize: 14,
-              lineHeight: 1.6,
-            }}
-          >
-            <h3 style={{ margin: "0 0 10px", color: "#e2e8f0" }}>流程</h3>
-            <ol style={{ paddingLeft: 20, margin: 0, display: "grid", gap: 8 }}>
-              <li>点击开始上传，选择本地 ROM 文件。</li>
-              <li>完成选择后进入游戏页并自动加载核心。</li>
-              <li>开始游戏，随时可返回重新选择 ROM。</li>
-            </ol>
-          </div>
-          <div
-            style={{
-              marginTop: 16,
-              background: "#0f172a",
-              borderRadius: 12,
-              padding: 16,
-              border: "1px solid rgba(148, 163, 184, 0.25)",
-              color: "#94a3b8",
-              fontSize: 13,
-              lineHeight: 1.5,
-            }}
-          >
-            提示：首次使用先上传 ROM，若需更换可在游戏页点击返回。
-          </div>
+          {features.map((item) => (
+            <div
+              key={item.title}
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                background: featureCardBg,
+                border: `1px solid ${featureCardBorder}`,
+              }}
+            >
+              <p style={{ margin: "0 0 6px", fontWeight: 700, color: featureTitleColor }}>{item.title}</p>
+              <p style={{ margin: 0, color: featureDescColor, fontSize: 14 }}>{item.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
-    </main>
+      <div
+        style={{
+          background: rightCardBg,
+          border: `1px solid ${rightCardBorder}`,
+          borderRadius: 16,
+          padding: 20,
+          boxShadow: rightCardShadow,
+        }}
+      >
+        <div
+          style={{
+            background: innerCardBg,
+            borderRadius: 12,
+            padding: 16,
+            border: `1px dashed ${innerCardBorder}`,
+            color: innerCardText,
+            fontSize: 14,
+            lineHeight: 1.6,
+          }}
+        >
+          <h3 style={{ margin: "0 0 10px", color: innerCardTitle }}>{t("homeProcessTitle")}</h3>
+          <ol style={{ paddingLeft: 20, margin: 0, display: "grid", gap: 8 }}>
+            <li>{t("homeProcessStep1")}</li>
+            <li>{t("homeProcessStep2")}</li>
+            <li>{t("homeProcessStep3")}</li>
+          </ol>
+        </div>
+        <div
+          style={{
+            marginTop: 16,
+            background: tipCardBg,
+            borderRadius: 12,
+            padding: 16,
+            border: `1px solid ${tipCardBorder}`,
+            color: tipCardText,
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}
+        >
+          {t("homeTip")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <AppLayout>
+      <HomeContent />
+    </AppLayout>
   );
 }
