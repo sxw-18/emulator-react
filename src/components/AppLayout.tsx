@@ -8,6 +8,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AppHeader } from "./AppHeader";
+import { AppFooter } from "./AppFooter";
 import "../i18n";
 
 type Lang = "zh" | "en";
@@ -110,27 +111,25 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
   const breadcrumbs = useMemo(() => {
-    try {
-      const map: Record<string, string> = {
-        "/upload": t("breadcrumbUpload"),
-        "/game": t("breadcrumbGame"),
-      };
-      const current = map[pathname];
-      if (!current) return [];
-      
-      const homeTitle = t("breadcrumbHome");
-      if (!homeTitle) return [];
-      
-      const items = [
-        { key: "home", title: <Link href="/">{homeTitle}</Link> },
-        { key: pathname, title: current },
-      ];
-      // Filter out any undefined/null items and ensure all required properties exist
-      return items.filter((item) => item != null && item.title != null && item.key != null);
-    } catch (error) {
-      console.warn("Error creating breadcrumbs:", error);
-      return [];
-    }
+    const map: Record<string, string> = {
+      "/upload": t("breadcrumbUpload"),
+      "/game": t("breadcrumbGame"),
+    };
+    const current = map[pathname];
+    if (!current) return [];
+    
+    const homeTitle = t("breadcrumbHome");
+    if (!homeTitle) return [];
+    
+    // Construct JSX outside of try/catch to avoid linter error
+    const homeLink = <Link href="/">{homeTitle}</Link>;
+    
+    const items = [
+      { key: "home", title: homeLink },
+      { key: pathname, title: current },
+    ];
+    // Filter out any undefined/null items and ensure all required properties exist
+    return items.filter((item) => item != null && item.title != null && item.key != null);
   }, [pathname, t]);
 
   return (
@@ -182,6 +181,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             )}
             {children}
           </Layout.Content>
+          <AppFooter
+            colors={{
+              textSecondary: themeConfig.token.colorTextSecondary,
+              border: themeConfig.token.colorBorder,
+              background: themeConfig.token.colorBgBase,
+            }}
+          />
         </Layout>
       </ConfigProvider>
     </AppStateContext.Provider>

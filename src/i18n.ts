@@ -59,6 +59,7 @@ const resources = {
       homeProcessStep2: "完成选择后进入游戏页并自动加载核心。",
       homeProcessStep3: "开始游戏，随时可返回重新选择 ROM。",
       homeTip: "提示：首次使用先上传 ROM，若需更换可在游戏页点击返回。",
+      footerDisclaimer: "免责声明：本网站仅提供游戏模拟器服务，不提供任何游戏ROM文件。用户需自行准备合法的游戏ROM文件。使用本服务时，请确保您拥有所使用游戏ROM的合法授权。本网站不对用户上传或使用的任何文件内容负责。",
     },
   },
   en: {
@@ -116,6 +117,7 @@ const resources = {
       homeProcessStep2: "After selection, enter the game page and the core will load automatically.",
       homeProcessStep3: "Start playing, and you can return anytime to select a different ROM.",
       homeTip: "Tip: Upload a ROM on first use. To change it, click back on the game page.",
+      footerDisclaimer: "Disclaimer: This website only provides emulator services and does not provide any game ROM files. Users must prepare legal game ROM files themselves. When using this service, please ensure you have legal authorization for the game ROMs you use. This website is not responsible for any file content uploaded or used by users.",
     },
   },
 };

@@ -19,8 +19,6 @@ function HomeContent() {
   ].filter((item) => item && item.title && item.desc); // Filter out any undefined items
 
   // 根据主题动态设置颜色
-  const badgeBg = isDark ? "rgba(22, 119, 255, 0.18)" : "rgba(22, 119, 255, 0.1)";
-  const badgeColor = isDark ? "#bae6ff" : "#1677ff";
   const heroTextColor = token.colorTextSecondary;
   const heroTitleColor = token.colorTextBase;
   const secondaryButtonBorder = token.colorBorder;
@@ -41,23 +39,8 @@ function HomeContent() {
   const tipCardText = token.colorTextSecondary;
 
   return (
-    <div className="hero-grid" style={{ padding: "24px", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+    <div className="hero-grid" style={{ padding: "24px",paddingTop: "60px",maxWidth: 1100, margin: "0 auto", width: "100%" }}>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 12 }}>
-        <p
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "6px 12px",
-            borderRadius: 999,
-            background: badgeBg,
-            color: badgeColor,
-            fontSize: 14,
-            fontWeight: 600,
-            marginBottom: 16,
-          }}
-        >
-          SSR Landing · EmulatorJS
-        </p>
         <h1 style={{ fontSize: 44, lineHeight: 1.1, margin: "0 0 16px", color: heroTitleColor }}>
           {t("homeHeroTitle")}
         </h1>
