@@ -75,33 +75,71 @@ function resolveCore(ext: string): CoreKey {
   return "gba";
 }
 
-async function injectLoader(src: string): Promise<void> {
+async function injectLoader(src: string, forceReload: boolean = false): Promise<void> {
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Cannot inject loader on server");
   }
 
   const ejsWindow = window as EJSWindow;
 
-  if (ejsWindow.EmulatorJS) {
-    return;
-  }
+  // 如果强制重新加载，清理旧的实例
+  if (forceReload) {
+    // 等待一小段时间确保之前的清理完成
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    
+    // 清理旧的 EmulatorJS 实例（如果存在）
+    if (ejsWindow.EmulatorJS) {
+      try {
+        // EmulatorJS 可能没有明确的清理方法，但我们可以重置它
+        ejsWindow.EmulatorJS = undefined;
+      } catch (e) {
+        console.warn("Error clearing EmulatorJS:", e);
+      }
+    }
+    
+    // 重置加载状态
+    ejsWindow.__EJS_loaderPending = false;
+  } else {
+    // 如果已经加载且不强制重新加载，直接返回
+    if (ejsWindow.EmulatorJS) {
+      return;
+    }
 
-  // Avoid double-injection while a previous loader is still in flight
-  if (ejsWindow.__EJS_loaderPending) {
-    return;
-  }
-
-  const existing = document.querySelector<HTMLScriptElement>('script[data-ejs-loader="true"]');
-  if (existing) {
-    const parent = existing.parentNode;
-    if (parent && parent.contains(existing)) {
-      parent.removeChild(existing);
-    } else if (existing.parentNode) {
-      existing.parentNode.removeChild(existing);
-    } else {
-      existing.remove();
+    // Avoid double-injection while a previous loader is still in flight
+    if (ejsWindow.__EJS_loaderPending) {
+      // 等待加载完成
+      let attempts = 0;
+      while (ejsWindow.__EJS_loaderPending && attempts < 50) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        attempts++;
+      }
+      if (ejsWindow.EmulatorJS) {
+        return;
+      }
     }
   }
+
+  // 清理旧的脚本标签
+  const existing = document.querySelectorAll<HTMLScriptElement>('script[data-ejs-loader="true"]');
+  existing.forEach((script) => {
+    try {
+      // 移除事件监听器
+      script.onload = null;
+      script.onerror = null;
+      
+      // 移除脚本标签
+      const parent = script.parentNode;
+      if (parent && parent.contains(script)) {
+        parent.removeChild(script);
+      } else if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      } else {
+        script.remove();
+      }
+    } catch (e) {
+      console.warn("Error removing existing loader script:", e);
+    }
+  });
 
   return new Promise<void>((resolve, reject) => {
     try {
@@ -154,21 +192,129 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
   const enableDebug = useMemo(() => true, []);
 
   const cleanupGame = useCallback(() => {
-    if (typeof window !== "undefined") {
-      const ejsWindow = window as EJSWindow;
-      if (ejsWindow.EJS_emulator) {
-        try {
-          (ejsWindow.EJS_emulator as { callEvent: (event: string) => void }).callEvent("exit");
-        } catch (e) {
-          console.warn("Error cleaning up emulator:", e);
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+
+    const ejsWindow = window as EJSWindow;
+
+    // 1. 停止并销毁模拟器实例
+    if (ejsWindow.EJS_emulator) {
+      try {
+        const emulator = ejsWindow.EJS_emulator as {
+          callEvent?: (event: string) => void;
+          exit?: () => void;
+          pause?: () => void;
+          stop?: () => void;
+          destroy?: () => void;
+        };
+
+        // 尝试多种清理方法
+        if (typeof emulator.pause === "function") {
+          try {
+            emulator.pause();
+          } catch (e) {
+            console.warn("Error pausing emulator:", e);
+          }
         }
+
+        if (typeof emulator.callEvent === "function") {
+          try {
+            emulator.callEvent("exit");
+          } catch (e) {
+            console.warn("Error calling exit event:", e);
+          }
+        }
+
+        if (typeof emulator.exit === "function") {
+          try {
+            emulator.exit();
+          } catch (e) {
+            console.warn("Error exiting emulator:", e);
+          }
+        }
+
+        if (typeof emulator.stop === "function") {
+          try {
+            emulator.stop();
+          } catch (e) {
+            console.warn("Error stopping emulator:", e);
+          }
+        }
+
+        if (typeof emulator.destroy === "function") {
+          try {
+            emulator.destroy();
+          } catch (e) {
+            console.warn("Error destroying emulator:", e);
+          }
+        }
+      } catch (e) {
+        console.warn("Error cleaning up emulator:", e);
+      } finally {
         ejsWindow.EJS_emulator = undefined;
       }
     }
 
+    // 2. 清理所有相关的全局变量
+    ejsWindow.EJS_onGameStart = undefined;
+    ejsWindow.EJS_player = undefined;
+    ejsWindow.EJS_gameName = undefined;
+    ejsWindow.EJS_biosUrl = undefined;
+    ejsWindow.EJS_gameUrl = undefined;
+    ejsWindow.EJS_core = undefined;
+    ejsWindow.EJS_pathtodata = undefined;
+    ejsWindow.EJS_language = undefined;
+    ejsWindow.EJS_startOnLoaded = undefined;
+    ejsWindow.EJS_DEBUG_XX = undefined;
+    ejsWindow.EJS_disableDatabases = undefined;
+    ejsWindow.EJS_threads = undefined;
+
+    // 3. 清理DOM元素
     if (displayRef.current) {
-      displayRef.current.innerHTML = '<div id="game"></div>';
+      displayRef.current.innerHTML = "";
     }
+
+    // 4. 清理可能存在的游戏容器
+    const gameContainer = document.getElementById("game");
+    if (gameContainer) {
+      gameContainer.innerHTML = "";
+    }
+
+    const displayContainer = document.getElementById("display");
+    if (displayContainer) {
+      displayContainer.innerHTML = "";
+    }
+
+    // 5. 清理可能存在的canvas元素
+    const canvases = document.querySelectorAll<HTMLCanvasElement>("#game canvas, #display canvas");
+    canvases.forEach((canvas) => {
+      try {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        canvas.remove();
+      } catch (e) {
+        console.warn("Error cleaning up canvas:", e);
+      }
+    });
+
+    // 6. 清理可能存在的音频元素
+    const audioElements = document.querySelectorAll("#game audio, #display audio");
+    audioElements.forEach((audio) => {
+      try {
+        (audio as HTMLAudioElement).pause();
+        (audio as HTMLAudioElement).src = "";
+        audio.remove();
+      } catch (e) {
+        console.warn("Error cleaning up audio:", e);
+      }
+    });
+
+    // 7. 清理可能存在的Web Workers
+    // EmulatorJS 可能使用 Web Workers，但无法直接清理它们
+    // 它们会在页面卸载时自动清理
   }, []);
 
   useEffect(() => {
@@ -306,15 +452,25 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
 
   useEffect(() => {
     let active = true;
+    let cleanupComplete = false;
+    
     const boot = async () => {
       if (!file || typeof window === "undefined") return;
 
+      // 先清理旧的模拟器实例
       cleanupGame();
+      cleanupComplete = true;
+      
+      // 重置状态
       setGameLoaded(false);
       setGameStarted(false);
       setGameKey((prev) => prev + 1);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // 等待足够的时间确保清理完成，并让DOM更新
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      
+      // 再次检查是否仍然活跃（用户可能已经导航离开）
+      if (!active) return;
 
       const parts = file.name.split(".");
       const ext = parts.pop() ?? "";
@@ -369,12 +525,14 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
 
       setStatus(t("statusLoadingCore", { core }));
       try {
-        await injectLoader(dataPath + "loader.js");
+        // 强制重新加载loader，确保清理旧的实例
+        await injectLoader(dataPath + "loader.js", true);
         if (!active) return;
         setStatus(t("statusLaunching"));
         setGameLoaded(true);
       } catch (error) {
         if (!active) return;
+        console.error("Failed to load emulator:", error);
         setStatus(
           t("statusLoadingFailed", {
             msg: error instanceof Error ? error.message : String(error),
@@ -388,7 +546,16 @@ export function GamePlayer({ file, language }: { file: File; language: "zh" | "e
 
     return () => {
       active = false;
-      cleanupGame();
+      // 只有在清理未完成时才执行清理
+      // 如果清理已完成，说明组件正在卸载，需要再次清理
+      if (cleanupComplete) {
+        // 延迟清理，确保组件完全卸载
+        setTimeout(() => {
+          cleanupGame();
+        }, 0);
+      } else {
+        cleanupGame();
+      }
     };
   }, [cleanupGame, enableDebug, enableThreads, file, language, t]);
 
